@@ -57,4 +57,11 @@ r = 0.05;
 b = 0.2;
 
 
-%------------- The utility in the last period ----------------
+%------------- The utility for the retireed agent ----------------
+% consumption of returement
+ 
+c_r = (1+r)*a + b - aa';
+c_r(find(c_r <=0)) = NaN;
+
+
+
