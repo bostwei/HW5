@@ -12,7 +12,7 @@
 N = 66;
 n = 0.011;
 % Grid Number
-M = 200;
+Na = 200;
 
 % Initial asset holding
 a1 = 0;
@@ -30,6 +30,8 @@ ssigma = 2;
 
 % idiosyncratic productivity
 z = [3;0.5];
+% The probability of productivity
+Pz = [0.2037;0.7963];
 
 % Trhansition probability
 Pi = [0.9261 1-0.9261;
@@ -41,21 +43,25 @@ aalpha = 0.36;
 delta = 0.06;
 
 % Asset Space
-alb = -2;
+alb = 0;
 aub = 5;
 
 
 
-A = linspace(alb, aub, M)';
+A = linspace(alb, aub, Na)';
 
-a = A* ones(1,M);
-aa = A* ones(1,M); 
+a = A* ones(1,Na);
+aa = A* ones(1,Na); 
+
+% Import labor effciency
+ef = importdata('ef.txt');
 
 %% Dynamic Programming Problem
 w = 1.05;
 r = 0.05;
 b = 0.2;
 
+bbeta = 0.97;
 
 %------------- The utility for the retireed agent ----------------
 % consumption of returement
@@ -63,5 +69,27 @@ b = 0.2;
 c_r = (1+r)*a + b - aa';
 c_r(find(c_r <=0)) = NaN;
 
+% utility of the retirement
+u_r = (c_r .^ ((1-ssigma) .* ggama))./(1-ssigma);
+u_r(find(isnan(u_r))) = -inf;
 
+%----------- The value function for retired agent ----------------
 
+v0_r = zeros(Na,N-JR);
+v1_r = zeros(Na,N-JR);
+dec_r = zeros(Na,N-JR);
+
+% find the value function for the T age agent
+v1_r(:,N-JR)= u_r(:,1); % The coloumn 1 means the agent choose not to save in this period.
+v0_r = v1_r;
+
+% find the value function for the j<T age agent
+for j = N-JR-1:-1:1
+    w_r = u_r + bbeta .*v0_r(:,j+1)';
+    [v1_r(:,j), dec_r(:,j)] = max(w_r,[],2);
+    v0_r = v1_r;
+end
+
+plot(A,v1_r(:,4))
+
+%----------- The utility function for worked agent ----------------
