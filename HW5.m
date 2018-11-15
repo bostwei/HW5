@@ -130,10 +130,10 @@ dec_aa_zh = zeros(Na,JR-1);
 dec_l_zl = zeros(Na,JR-1);
 dec_aa_zl = zeros(Na,JR-1);
 
-tic
+
 for j = JR-1
 % searh for the best l an aa' combination for each a
-parfor i = 1:Na
+for i = 1:Na
     ai = A(i);    
     % ------------ the labor l and future asset aaa choice of worker --------------------
     % consumption of worker
@@ -178,10 +178,74 @@ parfor i = 1:Na
     % storage the value function
     v1_w_zh(i,j) = v1_zh_l;
     v1_w_zl(i,j) = v1_zl_l;
-   
+    
+    v0_w_zh(:,j) = v1_w_zh(:,j); 
+    v0_w_zl(:,j) = v1_w_zl(:,j); 
 end
     
 end
+
+%------- For the rest of the working agent  -------------------------------
+ for j = JR-2:-1:1
+     tic
+for i = 1:Na
+    ai = A(i);    
+    % ------------ the labor l and future asset aaa choice of worker --------------------
+    % consumption of worker
+    c_w_zh = w * (1-ttheta)* e(1,j)* l + (1+r) * ai - aa';
+    c_w_zl = w * (1-ttheta)* e(2,j)* l + (1+r) * ai - aa';
+    c_w_zh(find(c_w_zh <0)) = NaN; 
+    c_w_zl(find(c_w_zl <0)) = NaN;
+  % utility of the worker is 
+    u_w_zh = (c_w_zh.^ggama.*(1-l).^(1-ggama)).^(1-ssigma)/(1-ssigma);
+    u_w_zl = (c_w_zl.^ggama.*(1-l).^(1-ggama)).^(1-ssigma)/(1-ssigma);
+    u_w_zh(find(isnan(u_w_zh))) = -inf;
+    u_w_zl(find(isnan(u_w_zl))) = -inf;
+    
+    w_zh = u_w_zh + bbeta * (Pi(1,1)*v0_w_zh(:,j+1)' + Pi(1,2)*v0_w_zl(:,j+1)');
+    w_zl = u_w_zl + bbeta * (Pi(2,1)*v0_w_zl(:,j+1)' + Pi(2,2)*v0_w_zl(:,j+1)') ;
+   
+   % --------------make choice of (l,aa) given a ------------------
+   % we frist choose aa
+   % - v1_zh_aa the optimal value w_zh after choosing aa, given a. The row of
+   % w_zh is varies of l.
+   % - dec_zh_aa is the optimal choice of aa given varies of l
+   [v1_zh_aa, dec_zh_aa] = max(w_zh,[],2);
+   [v1_zl_aa, dec_zl_aa] = max(w_zl,[],2); 
+   
+   
+   % then choose l
+   % - v1_zh_aa the optimal value w_zh after choosing aa, given a. The row of
+   % w_zh is varies of l.
+   % - dec_zh_aa is the optimal choice of aa given varies of l   
+   [v1_zh_l,dec_zh_l] = max(v1_zh_aa);
+   [v1_zl_l,dec_zl_l] = max(v1_zl_aa);
+   
+   % storage the choice of aa, l in the matrix
+   % for the good worker
+    dec_l_zh(i,j) = dec_zh_l;
+    dec_aa_zh(i,j) = dec_zh_aa(dec_zh_l);
+    
+   % for the bad worker 
+    dec_l_zl(i,j) = dec_zl_l;
+    dec_aa_zl(i,j) = dec_zl_aa(dec_zl_l);
+   
+    % storage the value function
+    v1_w_zh(i,j) = v1_zh_l;
+    v1_w_zl(i,j) = v1_zl_l;
+    
+    v0_w_zh(:,j) = v1_w_zh(:,j); 
+    v0_w_zl(:,j) = v1_w_zl(:,j);  
+   
+end
+fprintf('The current age group is %d .\n',j);
 toc
-% for j = JR-2:-1:1
-% end
+ end
+% plot the policy function for h0d0
+figure(1)
+plot(A,A(dec_aa_zh(:,1)),A,A(dec_aa_zl(:,1)));% the policy function for employment state
+legend({'high efficiency policy function','low efficiency policy function'},'Location','southeast')
+xlabel('a') 
+ylabel('aa')
+refline(1,0) 
+ 
