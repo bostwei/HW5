@@ -55,8 +55,9 @@ a = A* ones(1,Na);
 aa = A* ones(1,Na); 
 
 % labor space
-llb = 0.001;
-lub = 0.999;
+% Here I do not use the [0,1] because we  
+llb = 0.00000001;
+lub = 0.99999999;
 
 L = linspace(llb,lub,Na)';
 l = L* ones(1,Na);
@@ -120,18 +121,20 @@ v1_w_zh = v0_w_zh;
 v1_w_zl = v0_w_zl;
 
 
+% Initiate the decision rule for people d_l(a| j) d_aa(a|j)
+% - row of each is the a
+% - collumn is the age
+dec_l_zh = zeros(Na,JR-1);
+dec_aa_zh = zeros(Na,JR-1);
 
-dec_w_zh = zeros(Na,JR-1);
-dec_w_zl = zeros(Na,JR-1);
+dec_l_zl = zeros(Na,JR-1);
+dec_aa_zl = zeros(Na,JR-1);
 
-for j = JR-1:-1:1
-    
-
-
+tic
+for j = JR-1
 % searh for the best l an aa' combination for each a
-for i = 1:length(Na)
-    ai = A(i);
-    
+parfor i = 1:Na
+    ai = A(i);    
     % ------------ the labor l and future asset aaa choice of worker --------------------
     % consumption of worker
     c_w_zh = w * (1-ttheta)* e(1,j)* l + (1+r) * ai - aa';
@@ -143,23 +146,42 @@ for i = 1:length(Na)
     u_w_zl = (c_w_zl.^ggama.*(1-l).^(1-ggama)).^(1-ssigma)/(1-ssigma);
     u_w_zh(find(isnan(u_w_zh))) = -inf;
     u_w_zl(find(isnan(u_w_zl))) = -inf;
-  
-       
-end
-
-
-
     
-  
-
- 
- % optimization choose of aa'
-%  u_w_zh + bbeta * (
-%  
-% c_r(find(c_r <=0)) = NaN;
-% 
-% % utility of the retirement
-% u_r = (c_r .^ ((1-ssigma) .* ggama))./(1-ssigma);
-% u_r(find(isnan(u_r))) = -inf;
+    w_zh = u_w_zh + bbeta * v0_w_zh(:,j+1)';
+    w_zl = u_w_zl + bbeta * v0_w_zl(:,j+1)';
+   
+   % --------------make choice of (l,aa) given a ------------------
+   % we frist choose aa
+   % - v1_zh_aa the optimal value w_zh after choosing aa, given a. The row of
+   % w_zh is varies of l.
+   % - dec_zh_aa is the optimal choice of aa given varies of l
+   [v1_zh_aa, dec_zh_aa] = max(w_zh,[],2);
+   [v1_zl_aa, dec_zl_aa] = max(w_zl,[],2); 
+   
+   
+   % then choose l
+   % - v1_zh_aa the optimal value w_zh after choosing aa, given a. The row of
+   % w_zh is varies of l.
+   % - dec_zh_aa is the optimal choice of aa given varies of l   
+   [v1_zh_l,dec_zh_l] = max(v1_zh_aa);
+   [v1_zl_l,dec_zl_l] = max(v1_zl_aa);
+   
+   % storage the choice of aa, l in the matrix
+   % for the good worker
+    dec_l_zh(i,j) = dec_zh_l;
+    dec_aa_zh(i,j) = dec_zh_aa(dec_zh_l);
+    
+   % for the bad worker 
+    dec_l_zl(i,j) = dec_zl_l;
+    dec_aa_zl(i,j) = dec_zl_aa(dec_zl_l);
+   
+    % storage the value function
+    v1_w_zh(i,j) = v1_zh_l;
+    v1_w_zl(i,j) = v1_zl_l;
+   
 end
-
+    
+end
+toc
+% for j = JR-2:-1:1
+% end
