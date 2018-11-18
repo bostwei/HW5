@@ -248,4 +248,39 @@ legend({'high efficiency policy function','low efficiency policy function'},'Loc
 xlabel('a') 
 ylabel('aa')
 refline(1,0) 
- 
+
+%% Question 2
+
+% initiate the sized of population to be 1
+mu = ones(N,1);
+for i = 1: N-1
+    mu(i+1) = mu(i)/(1+n);
+end
+% normalized mu
+mu = mu./sum(mu);
+
+% -------- compute the asset choice --------------------
+% compute the decision matrix
+% - first argument is a
+% - second argument is its asset choice in the next period aa
+% - the third argument is age j
+g_aa_zh = zeros(Na,Na,JR-1);
+g_aa_zl = zeros(Na,Na,JR-1);
+for j = 1:JR-1
+    for i = 1:Na
+        % create the transition criterion
+        g_aa_zh(i,dec_aa_zh(i,j),j) = 1;
+                % create the transition criterion
+        g_aa_zl(i,dec_aa_zl(i,j),j) = 1;
+    end
+end
+
+
+
+% compute the transition matrix
+ trans_aa=zeros(2*Na,2*Na,JR-1);
+for j = 1:JR-1
+    trans_aa(:,:,j) = [g_aa_zh(:,:,j)*Pi(1,1), g_aa_zl(:,:,j)*Pi(1,2) 
+                          g_aa_zh(:,:,j)*Pi(2,1), g_aa_zl(:,:,j)*Pi(2,2) ];
+    trans_aa(:,:,j) = trans_aa(:,:,j)'; 
+end
