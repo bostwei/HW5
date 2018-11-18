@@ -1,12 +1,14 @@
-function [outputArg1,outputArg2] = find_aa_l(a,j)
-%FIND_AA_L This function take calculate the choice of aa and l given a
+function [dec_zh_aa,dec_zl_aa,dec_zh_l,dec_zl_l,v1_zh_l,v1_zl_l] = find_aa_l(a,j)
+%FIND_AA_L This function calculate the choice of aa and l given a for
+%working agent
 % Input
 %   - a is the a given, scaler
 %   - j is the age of the worker
 
 % Output 
 %   - 
-global e r l aa w ttheta ggama bbeta; 
+global e r l aa w ttheta ggama bbeta ssigma;
+global v0_w_zh v0_w_zl;
     % ------------ the labor l and future asset aaa choice of worker --------------------
     ai = a;
     
