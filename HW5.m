@@ -5,8 +5,7 @@
 % ************************************************************************
 
 % ************************************************************************
-% This script is used to find the stationary distribution in the OLG model
-% the homework 5 for Econ 899
+% This script is used to solving the homework 5 for Econ 899
 % ***********************************************************************
 clear
 clc
@@ -131,12 +130,10 @@ dec_aa_zh = zeros(Na,JR-1);
 dec_l_zl = zeros(Na,JR-1);
 dec_aa_zl = zeros(Na,JR-1);
 
-tic
+
 for j = JR-1
 % searh for the best l an aa' combination for each a
-v0_w_zh_temp = v0_w_zh(:,j+1);
-v0_w_zl_temp = v0_w_zl(:,j+1);
-parfor i = 1:Na
+for i = 1:Na
     ai = A(i);    
     % ------------ the labor l and future asset aaa choice of worker --------------------
     % consumption of worker
@@ -150,8 +147,8 @@ parfor i = 1:Na
     u_w_zh(find(isnan(u_w_zh))) = -inf;
     u_w_zl(find(isnan(u_w_zl))) = -inf;
     
-    w_zh = u_w_zh + bbeta * v0_w_zh_temp';
-    w_zl = u_w_zl + bbeta * v0_w_zl_temp';
+    w_zh = u_w_zh + bbeta * v0_w_zh(:,j+1)';
+    w_zl = u_w_zl + bbeta * v0_w_zl(:,j+1)';
    
    % --------------make choice of (l,aa) given a ------------------
    % we frist choose aa
@@ -181,19 +178,17 @@ parfor i = 1:Na
     % storage the value function
     v1_w_zh(i,j) = v1_zh_l;
     v1_w_zl(i,j) = v1_zl_l;
-    fprintf('This is %d th a = %.3f\n',i,ai);
-end
+    
     v0_w_zh(:,j) = v1_w_zh(:,j); 
     v0_w_zl(:,j) = v1_w_zl(:,j); 
 end
-toc
+    
+end
 
 %------- For the rest of the working agent  -------------------------------
  for j = JR-2:-1:1
-    v0_w_zh_temp = v0_w_zh(:,j+1);
-    v0_w_zl_temp = v0_w_zl(:,j+1);
      tic
-parfor i = 1:Na
+for i = 1:Na
     ai = A(i);    
     % ------------ the labor l and future asset aaa choice of worker --------------------
     % consumption of worker
@@ -207,8 +202,8 @@ parfor i = 1:Na
     u_w_zh(find(isnan(u_w_zh))) = -inf;
     u_w_zl(find(isnan(u_w_zl))) = -inf;
     
-    w_zh = u_w_zh + bbeta * (Pi(1,1)*v0_w_zh_temp' + Pi(1,2)*v0_w_zl_temp');
-    w_zl = u_w_zl + bbeta * (Pi(2,1)*v0_w_zh_temp' + Pi(2,2)*v0_w_zl_temp') ;
+    w_zh = u_w_zh + bbeta * (Pi(1,1)*v0_w_zh(:,j+1)' + Pi(1,2)*v0_w_zl(:,j+1)');
+    w_zl = u_w_zl + bbeta * (Pi(2,1)*v0_w_zh(:,j+1)' + Pi(2,2)*v0_w_zl(:,j+1)') ;
    
    % --------------make choice of (l,aa) given a ------------------
    % we frist choose aa
@@ -238,10 +233,11 @@ parfor i = 1:Na
     % storage the value function
     v1_w_zh(i,j) = v1_zh_l;
     v1_w_zl(i,j) = v1_zl_l;
-   
-end
+    
     v0_w_zh(:,j) = v1_w_zh(:,j); 
     v0_w_zl(:,j) = v1_w_zl(:,j);  
+   
+end
 fprintf('The current age group is %d .\n',j);
 toc
  end
@@ -253,7 +249,7 @@ xlabel('a')
 ylabel('aa')
 refline(1,0) 
 
-%% Question 2 Stationary distribution
+%% Question 2
 
 % initiate the density mu of each age corhort, mu(i) is the density of 
 % agent in age i.   
@@ -359,11 +355,14 @@ mu_work = diag(mu(1:JR-1));
 mu_r = diag(mu(JR:N));
 
 % rescale the working population density of each age cohort by age amount
-mu_phi_zh = phi_zh(:,1:JR-1) * mu_work;
-mu_phi_zl = phi_zl(:,1:JR-1) * mu_work;
+phi_zh = phi_zh(1:JR-1) * mu_work;
+phi_zl = phi_zl(1:JR-1) * mu_work;
 
 % rescale the retiring population density of each age cohort by age amount
-mu_phi_r = phi_r * mu_r;                      
+phi_r = phi_r * mu_r;                      
+
+
+
 
 
 
