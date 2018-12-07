@@ -101,6 +101,9 @@ for j = N-JR-1:-1:1
 end
 
 plot(A,v1_r(:,4))
+title('Value function for model-age 50')
+xlabel('a') 
+ylabel('v')
 
 %----------- The utility function for worked agent ----------------
 % labor efficiency 
@@ -246,8 +249,9 @@ figure(1)
 plot(A,A(dec_aa_zh(:,1)),A,A(dec_aa_zl(:,1)));% the policy function for employment state
 legend({'high efficiency policy function','low efficiency policy function'},'Location','southeast')
 xlabel('a') 
-ylabel('aa')
-refline(1,0) 
+ylabel('savling')
+title('Savling function for model-age 20')
+
 
 %% Question 2
 

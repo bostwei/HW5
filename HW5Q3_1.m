@@ -54,7 +54,7 @@ delta = 0.06;
 bbeta = 0.97;
 
 % Asset Space
-alb = 0;
+alb = 0.00000001;
 aub = 5;
 
 A = linspace(alb, aub, Na)';
@@ -90,10 +90,10 @@ mu = mu./sum(mu);
 % r = 0.05;
 % b = 0.2;
 % Intital guess of the labor supply
-L0 =  0.3017; %sum(sum(mu(1:JR-1)));
+L0 =  0.3132; %sum(sum(mu(1:JR-1)));
 
 % Inital guess of capital 
-K0 = 1.8269; %
+K0 = 2.1439; %
 
 %-------------- Begin trail and error to find the euqilibirumn wage -----
 diff = 10;
@@ -453,3 +453,22 @@ fprintf('Iteration %d: wage difference is %.4f, wage is %.4f, interest rate is %
 
 
 end
+
+%% Total Welfare sum of the v
+w_working = v1_w_zh(:,1:45) .*  mu_phi_zh + v1_w_zl(:,1:45) .* mu_phi_zl;
+w_working = sum(sum(abs(w_working)));
+w_retire = v1_r.* mu_phi_r(:,1:20);
+w_retire = sum(sum(abs(w_retire)));
+welfare  = w_retire + w_working;
+
+%% Total wealth sum of a across population
+A_working = A .*  mu_phi_zh + A .*mu_phi_zl; 
+A_retire = A .* mu_phi_r;
+CV = sum(sum(A_working)) + sum(sum(A_retire));
+
+%% Consumption Equivalance 
+% ss0 is the value function without social security.
+v_zh_ss0 = v1_w_zh;
+v_zl_ss0 = v1_w_zl;
+v_retire_ss0 = v1_r;
+save('ss0.mat','v_zh_ss0','v_zl_ss0','v_retire_ss0');

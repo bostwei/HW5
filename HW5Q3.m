@@ -88,10 +88,10 @@ mu = mu./sum(mu);
 % r = 0.05;
 % b = 0.2;
 % Intital guess of the labor supply
-L0 =  0.3017; %sum(sum(mu(1:JR-1)));
+L0 =  0.3011; %sum(sum(mu(1:JR-1)));
 
 % Inital guess of capital 
-K0 = 1.8269; %
+K0 = 1.8215; %
 
 %-------------- Begin trail and error to find the euqilibirumn wage -----
 diff = 10;
@@ -233,6 +233,8 @@ end
     P21= Pi(2,1);
     P12= Pi(1,2);
     P22= Pi(2,2);
+    
+    tic
 parfor i = 1:Na
     ai = A(i);    
     % ------------ the labor l and future asset aaa choice of worker --------------------
@@ -284,6 +286,7 @@ end
     v0_w_zl(:,j) = v1_w_zl(:,j);  
 fprintf('The current age group is %d .\n',j);
  end
+ toc
 % % plot the policy function for h0d0
 % figure(1)
 % plot(A,A(dec_aa_zh(:,1)),A,A(dec_aa_zl(:,1)));% the policy function for employment state
@@ -449,3 +452,51 @@ fprintf('Iteration %d: wage difference is %.4f, wage is %.4f, interest rate is %
 
 
 end
+
+%% Total Welfare sum of the v
+w_working = v1_w_zh(:,1:45) .*  mu_phi_zh + v1_w_zl(:,1:45) .* mu_phi_zl;
+w_working = sum(sum(abs(w_working)));
+w_retire = v1_r.* mu_phi_r(:,1:20);
+w_retire = sum(sum(abs(w_retire)));
+welfare  = w_retire + w_working;
+
+%% Total wealth sum of a across population
+A_working = A .*  mu_phi_zh + A .*mu_phi_zl; 
+A_retire = A .* mu_phi_r;
+CV = sum(sum(A_working)) + sum(sum(A_retire));
+gini = gini(sum(mu_phi_zh),sum(abs(v1_w_zh(:,1:45))),1);
+
+%% Consumption Equivalance 
+v_zh_ss1 = v1_w_zh;
+v_zl_ss1 = v1_w_zl;
+v_retire_ss1 = v1_r;
+ % v_ss1 is the welfare with social security 
+load('ss0.mat')
+
+lambda_zh = (v_zh_ss0./v_zh_ss1).^(1/(ggama*(1-ssigma)))-1;
+lambda_zl = (v_zl_ss0./v_zl_ss1).^(1/(ggama*(1-ssigma)))-1;
+lambda_retire = (v_retire_ss0./v_retire_ss1).^(1/(ggama*(1-ssigma)))-1;
+
+lambda_mu_zh = lambda_zh(:,1:45).* mu_phi_zh;
+lambda_mu_zh = sum(lambda_mu_zh,1)./(sum(mu_phi_zh,1));
+
+lambda_mu_zl = lambda_zh(:,1:45).* mu_phi_zl;
+lambda_mu_zl = sum(lambda_mu_zl,1)./(sum(mu_phi_zl,1));
+
+lambda_mu_r = lambda_retire.* mu_phi_r(:,1:20);
+lambda_mu_r = sum(lambda_mu_r,1)./(sum(mu_phi_r(:,1:20),1));
+
+% plot the change 
+figure (1)
+plot(1:45,lambda_mu_zh,1:45,lambda_mu_zl);
+legend({'high efficiency consumption equivalence','low efficiency consumption equivalence'},'Location','southwest')
+xlabel('a') 
+ylabel('CE')
+title('Consumption Equivalance to different type of working agent')
+
+figure (2)
+plot(1:20,lambda_mu_r);
+legend({'Retired population consumption equivalence'},'Location','southwest')
+xlabel('a') 
+ylabel('CE')
+title('Consumption Equivalance of Retired people')
